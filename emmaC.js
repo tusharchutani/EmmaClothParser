@@ -207,7 +207,7 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 				html = $('a',html.html());
 				var link = "https://www.emmacloth.com"+ html[0].attribs.href;
 				await sleep(1500);
-				getProductInfo(link, true);
+				await getProductInfo(link, true);
 			}})
 	}
 }

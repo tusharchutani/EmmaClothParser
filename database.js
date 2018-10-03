@@ -19,19 +19,12 @@ module.exports = class DB{
 
     async addProduct(product){
         try{
-            log.info("Finding");
-            var x = await Product.findOne({ handel: product.handel, option1Value: product.option1Value, option1Name: product.option1Name}).lean().exec();
-            log.info("Found");
-            if(x != null){
-                return false;
-            }else{
-                await product.save();
-                log.info("Product was saved");
-                return true;
-            }
+            log.info("Saving the product. "+ product.variantSKU);
+            await product.save();
+            log.info("Product has been saved");
+            return true;
         }catch(e){
-            debugger
-            log.error("There was an error trying to save product "+product.variantSKU);
+            log.error("The product was already in the DB "+product.variantSKU);
             log.error(e);
         }
     }

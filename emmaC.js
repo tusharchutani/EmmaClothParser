@@ -134,7 +134,7 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 	productData.productHandel = $("#productCodeSpan",html).text();
 	productData.productTitle = $('.good_descright > h1',html).text();
 	await sleep(1500);
-	// productData.variantPrice = await getProductPrice(productId);
+	productData.variantPrice = await getProductPrice(productId);
 	productData.migratedFrom = productUrl.match('(.*).com/(.*).html')[2];
 	productData.body = $("#goods_description_top > .goods_description > .goods_description_con > .ItemSpecificationCenter",html).html();
 	
@@ -268,18 +268,25 @@ async function getAllProductsFromHeaderLink(headerLink){
 
 
 (async function(){
-	log.info("---------------------------SCRIPT HAS STARTED---------------------------");
-	log.info("Setting up DB connection");
-	databaseConnections = await DB.create("admin","admin");
-	log.info("Setting up CSV");
-	csvWrite = await CSVWritter.setUp();
-	log.info("Getting all header links");
-	var headerLinks = await getAllHeadingLinks();
+	try{
+		log.info("---------------------------SCRIPT HAS STARTED---------------------------");
+		log.info("Setting up DB connection");
+		databaseConnections = await DB.create("admin","admin");
+		log.info("Setting up CSV");
+		csvWrite = await CSVWritter.setUp();
+		log.info("Getting all header links");
+		var headerLinks = await getAllHeadingLinks();
+		
+		for(var i = 0; i < headerLinks.length; i++){
+			await getAllProductsFromHeaderLink(headerLinks[i]);
+		}
 	
-	for(var i = 0; i < headerLinks.length; i++){
-		await getAllProductsFromHeaderLink(headerLinks[i]);
+		log.info("---------------------------SCRIPT HAS ENDED---------------------------");
+		log.info("there are a total of "+totalNumberOfProducts+ " in emma store");
+	}catch(error){
+		log.info("---------------------------SCRIPT HAS ENDED DUE TO ERROR---------------------------");
+		log.error("Error stack: "+error);
+
 	}
 
-	log.info("---------------------------SCRIPT HAS ENDED---------------------------");
-	log.info("there are a total of "+totalNumberOfProducts+ " in emma store");
 })();

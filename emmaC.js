@@ -230,7 +230,11 @@ async function getProductPrice(productId){
 		json:true
 	}
 	var priceData = await RP.rp(options);
-	return priceData.goods_price.shop_price;
+	if(priceData == null || priceData.goods_price == null || priceData.goods_price.shop_price == null){
+		return getProductPrice(productId); 
+	}else{
+		return priceData.goods_price.shop_price;
+	}
 }
 
 async function getAllProductsFromHeaderLink(headerLink){

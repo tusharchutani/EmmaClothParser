@@ -25,7 +25,7 @@ module.exports = class DB{
             return true;
         }catch(e){
             log.error("The product was already in the DB "+product.variantSKU);
-            log.error(e);
+            // log.error(e);
         }
     }
     static async create(username, password){

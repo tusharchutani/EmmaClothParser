@@ -231,8 +231,10 @@ async function getProductPrice(productId){
 	}
 	var priceData = await RP.rp(options);
 	if(priceData == null || priceData.goods_price == null || priceData.goods_price.shop_price == null){
+		log.info("Couldn't get the price of the product. Retrying now "+productId);
 		return getProductPrice(productId); 
 	}else{
+		log.info("Got the price of the product "+productId);
 		return priceData.goods_price.shop_price;
 	}
 }

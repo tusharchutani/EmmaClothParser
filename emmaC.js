@@ -175,7 +175,7 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 	});
 	
 	var ProductsArr = getProductArray(productData);
-	await async.each(ProductsArr, function(product){
+	await async.each(ProductsArr, async (product)=>{
 		log.info("Adding product to DB"+product.variantSKU + " link:"+productUrl);
 		var res = await databaseConnections.addProduct(product);
 		log.info("Finished Adding the product "+product.variantSKU + " link:"+productUrl);

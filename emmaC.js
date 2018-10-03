@@ -175,17 +175,13 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 	});
 	
 	var ProductsArr = getProductArray(productData);
-	/*async.each(ProductsArr, function(product){
+	await async.each(ProductsArr, function(product){
 		log.info("Adding product to DB"+product.variantSKU + " link:"+productUrl);
-		var res = databaseConnections.addProduct(product);
-
-		if(!res){
-			log.info("The product was already in the DB");
-		}else{
-			log.info("The product was inserted into the DB");
-		}		
-	});*/
-	for ( const  product of ProductsArr){
+		var res = await databaseConnections.addProduct(product);
+		log.info("Finished Adding the product "+product.variantSKU + " link:"+productUrl);
+		
+	});
+	/*for ( const  product of ProductsArr){
 		log.info("Adding product to DB"+product.variantSKU + " link:"+productUrl);
 		var res = await databaseConnections.addProduct(product);
 
@@ -194,7 +190,7 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 		}else{
 			log.info("The product was inserted into the DB");
 		}		
-	}
+	}*/
 
 	log.info("Inserting records into csv");
 	//insert into csv

@@ -12,8 +12,13 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
     slack = new Slack();
     slack.setWebhook(webhookUri);
 
-
+    i = 0;
     while(true){
+        if(i != 0){
+            await sleep(600000);
+        }
+        i=1;
+        
         try{
             var items = await databaseConnections.numberOfAddedItems();
             var time = new Date(); // for now
@@ -28,7 +33,6 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
         }
 
         //5 minute interwals
-        await sleep(600000);
     }
 
 })();

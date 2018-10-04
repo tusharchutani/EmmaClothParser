@@ -14,17 +14,23 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
 
     i = 0;
     while(true){
+        console.log("Checking again in 10 minutes");
         try{
             var items = await databaseConnections.numberOfAddedItems();
-            var time = new Date(); // for now
-            var txt = "There are "+items.length+" items indexed"+" checked at "+time;
+            var date = new Date();
+            var utcDate = new Date(date.toUTCString());
+            utcDate.setHours(utcDate.getHours()-8);
+            var usDate = new Date(utcDate);
+
+            var txt = "There are "+items.length+" items indexed"+" checked at "+usDate;
             await slack.webhook({
                 channel: "#noofproductsindexed",
                 username: "ItemTracker",
                 text: txt
               }, function(err, response) {
-                  debugger
-                console.log("Slack"+response);
+                if(err){
+                    console.log("Slack"+response);
+                }
               })
         }catch(err){
             console.log("there was an error "+err);

@@ -28,7 +28,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
         }catch(err){
             console.log("there was an error "+err);
         }
-        sleep(600000);
+        await sleep(600000);
         //5 minute interwals
     }
 

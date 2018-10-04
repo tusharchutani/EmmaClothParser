@@ -14,7 +14,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
 
     i = 0;
     while(true){
-        console.log("Checking again in 10 minutes");
+        console.log("CHECKING....")
         try{
             var items = await databaseConnections.numberOfAddedItems();
             var date = new Date();
@@ -35,6 +35,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
         }catch(err){
             console.log("there was an error "+err);
         }
+        console.log("Checking again in 10 minutes");
         await sleep(600000);
         //5 minute interwals
     }

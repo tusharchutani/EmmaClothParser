@@ -36,7 +36,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
             console.log("there was an error "+err);
         }
         console.log("Checking again in 10 minutes");
-        await sleep(600000);
+        await sleep(120000);
         //5 minute interwals
     }
 

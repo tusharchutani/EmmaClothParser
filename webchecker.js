@@ -22,7 +22,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
             utcDate.setHours(utcDate.getHours()-8);
             var usDate = new Date(utcDate);
 
-            var txt = "There are "+items.length+" items indexed"+" checked at "+usDate;
+            var txt = "There are *"+items.length+" items indexed"+" checked at "+usDate.toTimeString();
             await slack.webhook({
                 channel: "#noofproductsindexed",
                 username: "ItemTracker",

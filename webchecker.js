@@ -23,6 +23,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
                 username: "ItemTracker",
                 text: txt
               }, function(err, response) {
+                  debugger
                 console.log("Slack"+response);
               })
         }catch(err){

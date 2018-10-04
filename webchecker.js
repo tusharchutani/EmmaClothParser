@@ -17,10 +17,11 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
         try{
             var items = await databaseConnections.numberOfAddedItems();
             var time = new Date(); // for now
+            var txt = "There are "+items.length+" items indexed"+" checked at "+time;
             await slack.webhook({
                 channel: "#noofproductsindexed",
                 username: "ItemTracker",
-                text: "There are "+items.length+" items indexed"+" checked at "+time
+                text: txt
               })
         }catch(err){
             console.log("there was an error "+err);

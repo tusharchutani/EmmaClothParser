@@ -8,10 +8,12 @@ const RP = require('./rp');
 const CSVWritter = require('./csvWritter');
 var async = require('async');
 const sleep = require('util').promisify(setTimeout)
+const issues = require('simple-node-logger').createSimpleLogger('issues.log');
 
 var Product = require('./product');
 var databaseConnections, csvWrite;
 var totalNumberOfProducts = 0;
+var totalNumberOfVariations = 0;
 
 const vendor = "EmmaCloth";
 async function getAllHeadingLinks(){
@@ -31,29 +33,6 @@ async function getAllHeadingLinks(){
 	}
 	return links;
 }
-
-async function getAllProductNameAndUrl(url){
-	console.log("Getting itesmf for "+url);
-	try{
-	var html = await RP.rp({uri: url, headers: {Connection: 'keep-alive'}}).catch(function(error){
-		log.error("There is an error in calling getAllProductNameAndUrl info "+error); 
-	});
-	var numOfItems = 0;
-	$('#productsContent1_goods > div > div.goods_mz > a',html).each(function(i,item){
-		var x = $(this);
-		// console.log(x.text());
-		numOfItems++;
-		totalNumberOfProducts++
-	});
-
-		
-	}catch(error){
-		console.log("Error");
-		throw error;
-	}
-	console.log("There are a total of "+numOfItems+" on this page");
-}
-
 
 function getProductArray(productInfo){
 	var products = [];
@@ -111,11 +90,9 @@ function getProductArray(productInfo){
 }
 
 async function getProductInfo(productUrl, otherOptionsVisisted=false){
-	console.log("Getting product info by url:"+productUrl);
+	console.log("------------------------PRODUCT START---------------------------------------");
+	console.log("PRODUCT: Getting product info by url:"+productUrl);
 	var html = await RP.rp({uri: productUrl, headers: {Connection: 'keep-alive'}});
-	 /*rp({uri: productUrl, headers: {Connection: 'keep-alive'}}).catch(function(error){
-		console.log("There is an error in calling getProductInfo "+error);
-	});*/
 	var productId = productUrl.match("-p-(.*)-cat")[1];
 	var productData = {
 		productHandel:"", 
@@ -133,7 +110,6 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 
 	productData.productHandel = $("#productCodeSpan",html).text();
 	productData.productTitle = $('.good_descright > h1',html).text();
-	await sleep(1500);
 	productData.variantPrice = await getProductPrice(productId);
 	productData.migratedFrom = productUrl.match('(.*).com/(.*).html')[2];
 	productData.body = $("#goods_description_top > .goods_description > .goods_description_con > .ItemSpecificationCenter",html).html();
@@ -175,44 +151,39 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 	});
 	
 	var ProductsArr = getProductArray(productData);
-	await async.each(ProductsArr, async (product)=>{
-		console.log("Adding product to DB"+product.variantSKU + " link:"+productUrl);
-		var res = await databaseConnections.addProduct(product);
-		console.log("Finished Adding the product "+product.variantSKU + " link:"+productUrl);
-		
-	});
-	/*for ( const  product of ProductsArr){
-		console.log("Adding product to DB"+product.variantSKU + " link:"+productUrl);
-		var res = await databaseConnections.addProduct(product);
+	console.log("There are "+ProductsArr.length + " variations of the product");
+	for(const product of ProductsArr){
+		console.log("Adding product to DB"+product.variantSKU);
+		await databaseConnections.addProduct(product).catch((error)=>{
+			console.log("Error adding the product "+product.variantSKU);
+			debugger
+		});
+		console.log("Finished Adding the product "+product.variantSKU);
+	}
 
-		if(!res){
-			console.log("The product was already in the DB");
-		}else{
-			console.log("The product was inserted into the DB");
-		}		
-	}*/
-	
-	console.log("Inserting records into csv");
-	//insert into csv
+	//insert into csv WE DO NOT NEED THI
 	/*await csvWrite.writeRecords(ProductsArr).catch((error)=>{
 		log.error("There was an error inserting into csv."+error);
 	});*/
-
+	console.log("------------------------PRODUCT END-----------------------------------------\n\n");
 	//Only look at different colours if other options have not been vetted
 	if(!otherOptionsVisisted){
-		
+		var otherOptionLinks = []; 
 		$('#_related_goods > span',html).each(async function(i, item){
 			if(item.attribs.class != "_current"){
 				var html = $(this);
 				html = $('a',html.html());
 				var link = "https://www.emmacloth.com"+ html[0].attribs.href;
-				await sleep(1500);
-				await getProductInfo(link, true);
+				otherOptionLinks.push(link);
 			}})
+
+			for(const otherOptionLink of otherOptionLinks){
+				await getProductInfo(otherOptionLink, true);
+			}
 	}
 }
 
-async function getProductPrice(productId){ 
+async function getProductPrice(productId, times=1){ 
 	var options = {
 		method: 'POST',
 		uri:'https://www.emmacloth.com/index.php',
@@ -226,13 +197,12 @@ async function getProductPrice(productId){
 		json:true
 	}
 	var priceData = await RP.rp(options);
-	if(priceData == null || priceData.goods_price == null || priceData.goods_price.shop_price == null){
-		console.log("Couldn't get the price of the product. Retrying now "+productId);
-		return getProductPrice(productId); 
-	}else{
-		console.log("Got the price of the product "+productId);
-		return priceData.goods_price.shop_price;
+	if(priceData == ''){
+		issues.error("Could not get price for "+productId);
 	}
+	console.log("Got the price of the product "+productId);
+	return priceData != '' ? priceData.goods_price.shop_price : '';
+	
 }
 
 async function getAllProductsFromHeaderLink(headerLink){
@@ -242,13 +212,17 @@ async function getAllProductsFromHeaderLink(headerLink){
 	var html = await RP.rp({uri: headerLink, headers: {Connection: 'keep-alive'}});
 	var numOfItems = 0;
 	//Get links for each of the products
+	var productLinks = [];
 	$('#productsContent1_goods > div > div.goods_mz > a',html).each(async function(i,item){
 		var x = $(this);
-		console.log(x.text());
-		var produtLink = "https://www.emmacloth.com"+x[0].attribs.href;
-		await getProductInfo(produtLink);
-		numOfItems++;
+		var prodcutLink = "https://www.emmacloth.com"+x[0].attribs.href;
+		productLinks.push(prodcutLink);
 	});
+	for (const productLink of productLinks ){
+		await getProductInfo(productLink);
+		totalNumberOfProducts++;
+	}
+
 	//go to the next page TODO
 	nextLink = $('#box-pagelist > div > div > a:contains(\'Next\')',html);
 	if(nextLink.length != 0){
@@ -262,7 +236,10 @@ async function getAllProductsFromHeaderLink(headerLink){
 	}
 	//TODO: make sure next is working
 	if(nextLink != null ){
-		console.log("Going to the next page of " + headerLink)
+		if(nextLink.charAt(0) == "/"){
+			console.log("Had to append the domain to nextLink. "+nextLink)
+			nextLink = 'https://www.emmacloth.com'+nextLink;
+		}
 		await getAllProductsFromHeaderLink(nextLink);
 	}
 }
@@ -279,14 +256,10 @@ async function getAllProductsFromHeaderLink(headerLink){
 		console.log("Getting all header links");
 		var headerLinks = await getAllHeadingLinks();
 		
-
-		await async.each(headerLinks, async (headerLink)=>{
+		for (const headerLink of headerLinks){
 			console.log("Getting header link info "+headerLink)
 			await getAllProductsFromHeaderLink(headerLink);
 			console.log("Got all the info from the header")
-		});
-		for(var i = 0; i < headerLinks.length; i++){
-			await getAllProductsFromHeaderLink(headerLinks[i]);
 		}
 	
 		console.log("---------------------------SCRIPT HAS ENDED---------------------------");
@@ -294,7 +267,7 @@ async function getAllProductsFromHeaderLink(headerLink){
 	}catch(error){
 		console.log("---------------------------SCRIPT HAS ENDED DUE TO ERROR---------------------------");
 		log.error("Error stack: "+error);
-
 	}
+	console.log("Totalnumber of products scanned "+totalNumberOfProducts);
 
 })();

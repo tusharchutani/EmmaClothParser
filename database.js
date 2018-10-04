@@ -24,7 +24,7 @@ module.exports = class DB{
             log.info("Product has been saved");
             return true;
         }catch(e){
-            log.error("The product was already in the DB "+product.variantSKU);
+            console.log("The product was already in the DB "+product.handel);
             // log.error(e);
         }
     }

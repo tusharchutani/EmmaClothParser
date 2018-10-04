@@ -20,6 +20,6 @@ var productSchema = new mongoose.Schema({
     imgAlt:String,
 });
 
-productSchema.index({ handel: 1, option1Value: 1, option1Name: 1 }, { unique: true});
+productSchema.index({ handel: 1, option1Value: 1, option1Name: 1, imgSrc: 1 }, { unique: true});
 
 module.exports = mongoose.model('Product',productSchema);

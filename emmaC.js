@@ -27,7 +27,7 @@ async function getAllHeadingLinks(){
 		});
 
 	}catch(error){
-		log.info(error);
+		console.log(error);
 	}
 	return links;
 }
@@ -111,10 +111,10 @@ function getProductArray(productInfo){
 }
 
 async function getProductInfo(productUrl, otherOptionsVisisted=false){
-	log.info("Getting product info by url:"+productUrl);
+	console.log("Getting product info by url:"+productUrl);
 	var html = await RP.rp({uri: productUrl, headers: {Connection: 'keep-alive'}});
 	 /*rp({uri: productUrl, headers: {Connection: 'keep-alive'}}).catch(function(error){
-		log.info("There is an error in calling getProductInfo "+error);
+		console.log("There is an error in calling getProductInfo "+error);
 	});*/
 	var productId = productUrl.match("-p-(.*)-cat")[1];
 	var productData = {
@@ -176,23 +176,23 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 	
 	var ProductsArr = getProductArray(productData);
 	await async.each(ProductsArr, async (product)=>{
-		log.info("Adding product to DB"+product.variantSKU + " link:"+productUrl);
+		console.log("Adding product to DB"+product.variantSKU + " link:"+productUrl);
 		var res = await databaseConnections.addProduct(product);
-		log.info("Finished Adding the product "+product.variantSKU + " link:"+productUrl);
+		console.log("Finished Adding the product "+product.variantSKU + " link:"+productUrl);
 		
 	});
 	/*for ( const  product of ProductsArr){
-		log.info("Adding product to DB"+product.variantSKU + " link:"+productUrl);
+		console.log("Adding product to DB"+product.variantSKU + " link:"+productUrl);
 		var res = await databaseConnections.addProduct(product);
 
 		if(!res){
-			log.info("The product was already in the DB");
+			console.log("The product was already in the DB");
 		}else{
-			log.info("The product was inserted into the DB");
+			console.log("The product was inserted into the DB");
 		}		
 	}*/
-
-	log.info("Inserting records into csv");
+	
+	console.log("Inserting records into csv");
 	//insert into csv
 	/*await csvWrite.writeRecords(ProductsArr).catch((error)=>{
 		log.error("There was an error inserting into csv."+error);
@@ -227,16 +227,16 @@ async function getProductPrice(productId){
 	}
 	var priceData = await RP.rp(options);
 	if(priceData == null || priceData.goods_price == null || priceData.goods_price.shop_price == null){
-		log.info("Couldn't get the price of the product. Retrying now "+productId);
+		console.log("Couldn't get the price of the product. Retrying now "+productId);
 		return getProductPrice(productId); 
 	}else{
-		log.info("Got the price of the product "+productId);
+		console.log("Got the price of the product "+productId);
 		return priceData.goods_price.shop_price;
 	}
 }
 
 async function getAllProductsFromHeaderLink(headerLink){
-	log.info("Getting products from url:"+headerLink);
+	console.log("Getting products from url:"+headerLink);
 	var nextLink;
 	try{
 	var html = await RP.rp({uri: headerLink, headers: {Connection: 'keep-alive'}});
@@ -244,7 +244,7 @@ async function getAllProductsFromHeaderLink(headerLink){
 	//Get links for each of the products
 	$('#productsContent1_goods > div > div.goods_mz > a',html).each(async function(i,item){
 		var x = $(this);
-		log.info(x.text());
+		console.log(x.text());
 		var produtLink = "https://www.emmacloth.com"+x[0].attribs.href;
 		await getProductInfo(produtLink);
 		numOfItems++;
@@ -262,7 +262,7 @@ async function getAllProductsFromHeaderLink(headerLink){
 	}
 	//TODO: make sure next is working
 	if(nextLink != null ){
-		log.info("Going to the next page of " + headerLink)
+		console.log("Going to the next page of " + headerLink)
 		await getAllProductsFromHeaderLink(nextLink);
 	}
 }
@@ -271,22 +271,28 @@ async function getAllProductsFromHeaderLink(headerLink){
 
 (async function(){
 	try{
-		log.info("---------------------------SCRIPT HAS STARTED---------------------------");
-		log.info("Setting up DB connection");
+		console.log("---------------------------SCRIPT HAS STARTED---------------------------");
+		console.log("Setting up DB connection");
 		databaseConnections = await DB.create("admin","admin");
-		log.info("Setting up CSV");
+		console.log("Setting up CSV");
 		csvWrite = await CSVWritter.setUp();
-		log.info("Getting all header links");
+		console.log("Getting all header links");
 		var headerLinks = await getAllHeadingLinks();
 		
+
+		await async.each(headerLinks, async (headerLink)=>{
+			console.log("Getting header link info "+headerLink)
+			await getAllProductsFromHeaderLink(headerLink);
+			console.log("Got all the info from the header")
+		});
 		for(var i = 0; i < headerLinks.length; i++){
 			await getAllProductsFromHeaderLink(headerLinks[i]);
 		}
 	
-		log.info("---------------------------SCRIPT HAS ENDED---------------------------");
-		log.info("there are a total of "+totalNumberOfProducts+ " in emma store");
+		console.log("---------------------------SCRIPT HAS ENDED---------------------------");
+		console.log("there are a total of "+totalNumberOfProducts+ " in emma store");
 	}catch(error){
-		log.info("---------------------------SCRIPT HAS ENDED DUE TO ERROR---------------------------");
+		console.log("---------------------------SCRIPT HAS ENDED DUE TO ERROR---------------------------");
 		log.error("Error stack: "+error);
 
 	}

@@ -17,6 +17,18 @@ module.exports = class DB{
         }
     }
 
+    async numberOfAddedItems(){
+        try{
+            console.log("Getting number of items");
+            var distinct = await Product.collection.distinct('handel');
+            console.log(distinct);
+            return distinct;
+        }catch(error){
+            log.error("Unable to get number of disctinct items"+error);
+        }
+
+    }
+
     async addProduct(product){
         try{
             log.info("Saving the product. "+ product.variantSKU);

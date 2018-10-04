@@ -15,7 +15,7 @@ webhookUri="https://hooks.slack.com/services/TD4NMTPBN/BD7J9096Z/zmtINklNd6oIfdL
     i = 0;
     while(true){
         if(i != 0){
-            await sleep(600000);
+            sleep(600000);
         }
         i=1;
         

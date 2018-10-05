@@ -38,6 +38,7 @@ module.exports = class DB{
         }catch(e){
             console.log("The product was already in the DB "+product.handel);
             // log.error(e);
+            return false;
         }
     }
     static async create(username, password){

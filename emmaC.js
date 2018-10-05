@@ -9,6 +9,8 @@ const CSVWritter = require('./csvWritter');
 var async = require('async');
 const sleep = require('util').promisify(setTimeout)
 const issues = require('simple-node-logger').createSimpleLogger('issues.log');
+const headerLinkLogs = require('simple-node-logger').createSimpleLogger('headingLink.log');
+
 
 var Product = require('./product');
 var databaseConnections, csvWrite;
@@ -154,10 +156,13 @@ async function getProductInfo(productUrl, otherOptionsVisisted=false){
 	console.log("There are "+ProductsArr.length + " variations of the product");
 	for(const product of ProductsArr){
 		console.log("Adding product to DB"+product.variantSKU);
-		await databaseConnections.addProduct(product).catch((error)=>{
+
+		var added = await databaseConnections.addProduct(product).catch((error)=>{
 			console.log("Error adding the product "+product.variantSKU);
-			debugger
 		});
+		if(added == false){
+			break;
+		}
 		console.log("Finished Adding the product "+product.variantSKU);
 	}
 
@@ -206,6 +211,7 @@ async function getProductPrice(productId, times=1){
 }
 
 async function getAllProductsFromHeaderLink(headerLink){
+	headerLinkLogs.log("Scraping:"+(headerLink));
 	console.log("Getting products from url:"+headerLink);
 	var nextLink;
 	try{
@@ -255,7 +261,17 @@ async function getAllProductsFromHeaderLink(headerLink){
 		csvWrite = await CSVWritter.setUp();
 		console.log("Getting all header links");
 		var headerLinks = await getAllHeadingLinks();
-		
+		//TEMP to run it faster
+		headerLinks = headerLinks.reverse();
+		var headerLinksLenght = headerLinks.length;
+		headerLinks = headerLinks.slice(headerLinksLenght/2);
+		//REMOVE IT LATER ON
+		headerLinkLogs.log("____________________HEADER LINKS_______________")
+		for(const headerLink of headerLinks){
+			headerLinkLogs.log(headerLink);
+		}
+		headerLinkLogs.log("____________________HEADER VISITED_______________")
+
 		for (const headerLink of headerLinks){
 			console.log("Getting header link info "+headerLink)
 			await getAllProductsFromHeaderLink(headerLink);

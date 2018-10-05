@@ -59,9 +59,10 @@ typings/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
-
+.history
 # next.js build output
 .next
+*.log
 
 # nuxt.js build output
 .nuxt

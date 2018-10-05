@@ -211,7 +211,7 @@ async function getProductPrice(productId, times=1){
 }
 
 async function getAllProductsFromHeaderLink(headerLink){
-	headerLinkLogs.log("Scraping:"+(headerLink));
+	headerLinkLogs.info("Scraping:"+(headerLink));
 	console.log("Getting products from url:"+headerLink);
 	var nextLink;
 	try{
@@ -266,11 +266,11 @@ async function getAllProductsFromHeaderLink(headerLink){
 		var headerLinksLenght = headerLinks.length;
 		headerLinks = headerLinks.slice(headerLinksLenght/2);
 		//REMOVE IT LATER ON
-		headerLinkLogs.log("____________________HEADER LINKS_______________")
+		headerLinkLogs.info("____________________HEADER LINKS_______________")
 		for(const headerLink of headerLinks){
-			headerLinkLogs.log(headerLink);
+			headerLinkLogs.info(headerLink);
 		}
-		headerLinkLogs.log("____________________HEADER VISITED_______________")
+		headerLinkLogs.info("____________________HEADER VISITED_______________")
 
 		for (const headerLink of headerLinks){
 			console.log("Getting header link info "+headerLink)

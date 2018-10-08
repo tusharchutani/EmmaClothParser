@@ -21,7 +21,7 @@ module.exports = class DB{
         try{
             console.log("Getting number of items");
             var distinct = await Product.collection.distinct('handel');
-            console.log(distinct);
+            // console.log(distinct);
             return distinct;
         }catch(error){
             log.error("Unable to get number of disctinct items"+error);
@@ -41,6 +41,26 @@ module.exports = class DB{
             return false;
         }
     }
+
+    async updateProductPrice(productId, price){
+        try{
+            await Product.findOneAndUpdate({handel: productId, variantPrice: { $ne: null}},{$set: {variantPrice: price}});
+        }catch(error){
+            console.log("There was an error updating the product price")
+        }
+    }
+
+
+    async getAllProductIdsAndHandels(){
+        try {
+            var toUpdate = await Product.find({ variantPrice: { $ne: null}});
+            return toUpdate;
+        }catch(error){
+            console.log("Gettin an error"); 
+        }
+        return [];
+    }
+
     static async create(username, password){
         const o = new DB();
         await o.connect(username, password);

@@ -1,5 +1,6 @@
 const DB = require('./database');
 const RP = require('./rp');
+const webhookUri="https://hooks.slack.com/services/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";
 const updatePriceLog = require('simple-node-logger').createSimpleLogger('updatePrice.log');
 
     async function getProductPrice(productId, times=1){ 
@@ -44,7 +45,18 @@ const updatePriceLog = require('simple-node-logger').createSimpleLogger('updateP
         newPrice = newPrice.substr(3);
         newPrice = parseFloat(newPrice);
         await databaseConnections.updateProductPrice(productHandel.handel, newPrice);
-        updatePriceLog.info(currentNumber + "/" + total);
+        var txt = currentNumber + "/" + total;
+
+        await slack.webhook({
+            channel: "#noofproductsindexed",
+            username: "ItemTracker",
+            text: txt
+          }, function(err, response) {
+            if(err){
+                console.log("Slack"+response);
+            }
+          })
+
         currentNumber++;
     }
     updatePriceLog.info("Finished");

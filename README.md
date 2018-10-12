@@ -2,6 +2,7 @@
 This project is a parser for scraping all the products from Emma Cloth ecommerce store. The stored product data is stored on a Mongo DB instance. 
 
 # How to run it?
+`npm install`
 `npm start`
 
 # Additional info
